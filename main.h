@@ -2,7 +2,7 @@
 #define MAX_WORD_LEN 28
 #define NUM_WORDS 109582
 #define LENPT 500
-#define NTESTS 200
+#define NTESTS 1000
 #define DEBUGGING 5
 
 /* Freq Analysis fitness function types */
@@ -17,9 +17,9 @@ typedef struct score_s {
 } score_t;
 
 /* Decoding types */
-typedef struct key_s {
-  int a[19];
-} key_t;
+// typedef struct key_s {
+//   int a[19];
+// } key_t;
 
 /* Global vars */
 char letters[28] = "abcdefghijklmnopqrstuvwxyz ";
@@ -30,7 +30,7 @@ score_t gblowscore;
 /* Function declarations */
 
 // form ngram map of input string
-int analyse(char *buf, int len, ngram_t target[]);
+int analyse(char *buf, int len, ngram_t target[]);	// Optimize to O(1)
 
 // initialise ngrams to default vals
 void init_ngrams(ngram_t target[]);

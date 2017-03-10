@@ -13,17 +13,37 @@ int bpowe(int b, int e) {
   return o;
 }
 
+// int find_ngram(char buf[], ngram_t target[]) {
+//   if (DEBUGGING > 5) printf("find_ngram: start\n");
+//   int i;
+//   for (i = 0; i < bpowe(27, N); i++) {
+//     if (!strncmp(target[i].ngram, buf, N)) {
+//       if (DEBUGGING > 5) printf("analyse: end +ve\n");
+//       return i;
+//     }
+//   }
+//   if (DEBUGGING > 5) printf("analyse: end -ve\n");
+//   return -1;
+// }
+
 int find_ngram(char buf[], ngram_t target[]) {
-  if (DEBUGGING > 5) printf("find_ngram: start\n");
   int i;
-  for (i = 0; i < bpowe(27, N); i++) {
-    if (!strncmp(target[i].ngram, buf, N)) {
-      if (DEBUGGING > 5) printf("analyse: end +ve\n");
-      return i;
+  int total=0;
+  int digits[N];
+
+  for (i = 0; i < N; i++) {
+    if (buf[i] != ' ') {
+      digits[i] = (int)buf[i] - 97;
+    } else {
+      digits[i] = 26;
     }
   }
-  if (DEBUGGING > 5) printf("analyse: end -ve\n");
-  return -1;
+
+  for (i = 0; i < N; i++) { 
+    total += digits[i] * bpowe(27, N-i-1);
+  }
+
+  return total;
 }
 
 // void old_init_ngrams(ngram_t target[]) {
@@ -130,7 +150,7 @@ void gen_sample_pt(char source[NUM_WORDS][MAX_WORD_LEN+1], char *target) {
   int curaddr = 0;
   int randword;
   int wordlen;
-  srand(time(NULL)); //seed rand()
+
   while (LENPT - curaddr - 1 > 0) {
     // if (DEBUGGING > 5) printf("rand() = %d\n", rand());
     randword = rand() % NUM_WORDS;
@@ -153,13 +173,20 @@ void find_base_score(char source[NUM_WORDS][MAX_WORD_LEN+1], ngram_t target[], s
   score_t scores[NTESTS];
   int i, j, avgscore, avgwlen;
   score_t curscore, lowscore;
-  char curpt[NTESTS][LENPT+1];
+  //char curpt[NTESTS][LENPT+1];
+  char * curpt[NTESTS];
+
+  for (i=0; i<NTESTS; i++){
+    curpt[i]=(char*)malloc(sizeof(char)*LENPT);
+    memset(curpt[i],'\0',LENPT);
+  }
+
   printf("find_base_score: gen pts and analyse\n");
   // generate plaintexts and map their ngrams
   for (i = 0; i < NTESTS; i++) {
     // for (j = 0; j < bpowe(27, N); j++) {
       gen_sample_pt(source, curpt[i]);
-      // if (DEBUGGING > 1) printf("%s\n\n", curpt[i]);
+      //if (DEBUGGING > 1) printf("%s\n\n", curpt[i]);
       analyse(curpt[i], LENPT, target);
     // }
   }
@@ -187,6 +214,11 @@ void find_base_score(char source[NUM_WORDS][MAX_WORD_LEN+1], ngram_t target[], s
   gbavgscore.avgwlen = avgwlen;
   gblowscore = lowscore;
   printf("find_base_score: end\n");
+
+  for (i=0; i<NTESTS; i++){
+    free(curpt[i]);
+  }
+
   return;
 }
 
@@ -239,7 +271,7 @@ int analyse(char *buf, int len, ngram_t target[]) {
     snprintf(curngram, N+1, "%s", &buf[i]);
     // if (DEBUGGING > 5) printf("curngram: %s\n", curngram);
     if ((t = find_ngram(curngram, target)) < 0) {
-      if (DEBUGGING > 5) printf("analyse: ngram not found: %s\n", curngram);
+      if (DEBUGGING > 2) printf("analyse: ngram not found: %s\n", curngram);
     }
     target[t].val++;
   }
@@ -248,3 +280,5 @@ int analyse(char *buf, int len, ngram_t target[]) {
   // if (DEBUGGING > 5) printf("analyse: end\n");
   return EXIT_SUCCESS;
 }
+
+
